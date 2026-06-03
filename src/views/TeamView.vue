@@ -131,48 +131,63 @@ onMounted(async () => {
           aria-hidden="true"
         />
 
-        <div class="relative flex flex-col lg:flex-row">
-          <div
-            class="relative mx-auto w-full max-w-sm shrink-0 p-6 pb-0 sm:max-w-none sm:p-8 lg:w-80 lg:pb-8"
+        <div class="relative px-6 py-6 sm:p-8 lg:px-10 lg:py-10">
+          <span
+            class="inline-flex w-fit items-center gap-2 rounded-full border border-cyan-500/40 bg-cyan-500/10 px-4 py-1.5 text-sm font-medium tracking-wide text-cyan-300"
           >
+            <span class="h-1.5 w-1.5 rounded-full bg-cyan-400" aria-hidden="true" />
+            {{ getLeaderField('tag') }}
+          </span>
+
+          <!-- 首行：姓名 / 职务 / 研究方向 与右上角照片同一水平带 -->
+          <div
+            class="mt-5 flex flex-col gap-6 sm:mt-6 lg:mt-6 lg:grid lg:grid-cols-[minmax(0,1fr)_14rem] lg:items-center lg:gap-x-10 xl:grid-cols-[minmax(0,1fr)_16rem]"
+          >
+            <div class="order-2 min-w-0 lg:order-none lg:col-start-1 lg:row-start-1 lg:pr-2">
+              <h3 class="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
+                {{ getLeaderField('name') }}
+              </h3>
+              <p class="mt-2 text-lg text-cyan-300/90 sm:mt-3 sm:text-xl">{{ getLeaderField('role') }}</p>
+              <p class="mt-4 text-base leading-relaxed text-slate-300 sm:text-lg">
+                <span class="font-medium text-slate-200">
+                  {{ t({ zh: '研究方向', en: 'Research' }) }}：
+                </span>
+                {{ getLeaderField('research') }}
+              </p>
+            </div>
+
             <div
-              class="relative mx-auto aspect-[4/5] max-h-[320px] w-full overflow-hidden rounded-xl ring-2 ring-cyan-500/30 ring-offset-2 ring-offset-slate-900 sm:max-h-none lg:aspect-auto lg:h-full lg:min-h-[380px] lg:max-h-none"
+              class="order-1 mx-auto w-full max-w-[200px] shrink-0 sm:max-w-[240px] lg:order-none lg:col-start-2 lg:row-start-1 lg:mx-0 lg:w-full lg:max-w-none"
             >
-              <img
-                :src="getLeaderAvatar()"
-                :alt="getLeaderField('name')"
-                class="h-full w-full object-cover object-top"
-              />
               <div
-                class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent lg:bg-gradient-to-r lg:from-transparent lg:to-slate-900/40"
-                aria-hidden="true"
-              />
+                class="relative aspect-[4/5] w-full overflow-hidden rounded-xl bg-slate-800/60 ring-2 ring-cyan-500/30 ring-offset-2 ring-offset-slate-900"
+              >
+                <img
+                  :src="getLeaderAvatar()"
+                  :alt="getLeaderField('name')"
+                  class="absolute inset-0 block h-full w-full object-contain object-top"
+                  loading="eager"
+                  decoding="async"
+                />
+                <div
+                  class="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-transparent to-transparent lg:bg-gradient-to-l lg:from-slate-900/35 lg:to-transparent"
+                  aria-hidden="true"
+                />
+              </div>
             </div>
           </div>
 
-          <div class="relative flex flex-1 flex-col justify-center px-6 pb-8 pt-4 sm:px-8 sm:pb-10 lg:py-10 lg:pr-10">
-            <span
-              class="inline-flex w-fit items-center gap-2 rounded-full border border-cyan-500/40 bg-cyan-500/10 px-4 py-1.5 text-sm font-medium tracking-wide text-cyan-300"
-            >
-              <span class="h-1.5 w-1.5 rounded-full bg-cyan-400" aria-hidden="true" />
-              {{ getLeaderField('tag') }}
-            </span>
-            <h3 class="mt-5 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
-              {{ getLeaderField('name') }}
-            </h3>
-            <p class="mt-3 text-lg text-cyan-300/90 sm:text-xl">{{ getLeaderField('role') }}</p>
-            <p class="mt-5 text-base leading-relaxed text-slate-300 sm:text-lg">
-              <span class="font-medium text-slate-200">
-                {{ t({ zh: '研究方向', en: 'Research' }) }}：
-              </span>
-              {{ getLeaderField('research') }}
-            </p>
-            <p v-if="getLeaderField('bio')" class="mt-5 text-base leading-relaxed text-slate-400 sm:text-lg">
+          <!-- 下方：简介与经历全宽铺满（含照片下方区域） -->
+          <div
+            v-if="getLeaderField('bio') || getLeaderExperience()"
+            class="mt-6 space-y-5 border-t border-white/10 pt-6 sm:mt-8 sm:space-y-6 sm:pt-8"
+          >
+            <p v-if="getLeaderField('bio')" class="text-base leading-relaxed text-slate-400 sm:text-lg">
               {{ getLeaderField('bio') }}
             </p>
             <p
               v-if="getLeaderExperience()"
-              class="mt-5 rounded-lg border border-white/10 bg-white/5 px-4 py-3 font-mono text-sm leading-relaxed whitespace-pre-line text-slate-400"
+              class="rounded-lg border border-white/10 bg-white/5 px-4 py-3 font-mono text-sm leading-relaxed whitespace-pre-line text-slate-400"
             >
               {{ getLeaderExperience() }}
             </p>
