@@ -249,6 +249,7 @@ export interface IntruduceRecord {
     research_areas?: string
     top_papers?: string
   }>
+  background_img?: string | { id?: string }
   translations?: Array<{
     languages_code?: string
     tag?: string
@@ -271,7 +272,7 @@ export async function fetchIntruduce(
   options: FetchIntruduceOptions = {},
 ): Promise<DirectusItemResponse<IntruduceRecord>> {
   const params = {
-    fields: 'tag,lab_name,lab_description,lab_about,introData,translations.*',
+    fields: 'tag,lab_name,lab_description,lab_about,introData,background_img,translations.*',
     limit: options.limit ?? 100,
     offset: options.offset ?? 0,
   }

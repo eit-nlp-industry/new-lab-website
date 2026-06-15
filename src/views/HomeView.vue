@@ -66,9 +66,16 @@ const introStats = computed(() => {
   ]
 })
 
-/** NLP / 大模型 / 多模态主题首图 */
-const heroImage =
+const DEFAULT_HERO_IMAGE =
   'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1920&h=1080&fit=crop&q=80'
+
+const heroImage = computed(() => {
+  const bg = intruduceRawData.value?.background_img
+  if (bg) {
+    return directusPublicAssetUrl(bg)
+  }
+  return DEFAULT_HERO_IMAGE
+})
 
 onMounted(async () => {
   const [papersResult, intruduceResult, newsResult] = await Promise.allSettled([

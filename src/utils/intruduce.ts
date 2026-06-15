@@ -25,6 +25,7 @@ export interface Intruduce {
     research_areas?: string
     top_papers?: string
   }>
+  background_img?: string | { id?: string }
   translations?: IntruduceTranslation[]
 }
 
