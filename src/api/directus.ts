@@ -298,6 +298,7 @@ export interface TeamMemberRecord {
   name: string
   title?: string
   description?: string
+  link?: string
   avatar?: string | { id?: string; filename_disk?: string } | null
   translations?: Array<{
     [key: string]: unknown
@@ -313,7 +314,7 @@ export async function fetchTeamMember(
   options: FetchTeamMemberOptions = {},
 ): Promise<DirectusListResponse<TeamMemberRecord>> {
   const params: Record<string, any> = {
-    fields: 'id,type,name,title,description,avatar,translations.*',
+    fields: 'id,type,name,title,description,avatar,link,translations.*',
     limit: options.limit ?? 100,
     offset: options.offset ?? 0,
   }

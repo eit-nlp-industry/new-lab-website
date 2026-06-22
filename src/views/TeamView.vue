@@ -51,6 +51,11 @@ function getMemberAvatar(member: TeamMemberRecord) {
   return member.avatar ? directusPublicAssetUrl(member.avatar) : defaultAvatar
 }
 
+function getMemberLink(member: TeamMemberRecord) {
+  const link = String(member.link ?? '').trim()
+  return link || ''
+}
+
 function getLeaderField(field: string) {
   return getTranslatedField(teamLeaderInfo.value, field, locale.value)
 }
@@ -245,7 +250,16 @@ onMounted(async () => {
               </div>
               <div class="mt-5 text-center">
                 <h4 class="text-xl font-semibold text-slate-900 sm:text-2xl">
-                  {{ getMemberName(member) }}
+                  <a
+                    v-if="getMemberLink(member)"
+                    :href="getMemberLink(member)"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="transition-colors hover:text-cyan-700"
+                  >
+                    {{ getMemberName(member) }}
+                  </a>
+                  <template v-else>{{ getMemberName(member) }}</template>
                 </h4>
                 <p class="mt-2 text-base font-medium text-cyan-700 sm:text-lg">
                   {{ getMemberRole(member) }}
