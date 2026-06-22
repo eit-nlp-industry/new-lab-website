@@ -8,7 +8,7 @@ import {
   type TeamMemberRecord,
 } from '@/api/directus'
 import { useLocale } from '@/composables/useLocale'
-import { getTranslatedField } from '@/utils/translation'
+import { getTranslatedExperienceField, getTranslatedField } from '@/utils/translation'
 
 const { t, locale } = useLocale()
 const teamMembers = ref<TeamMemberRecord[]>([])
@@ -60,25 +60,7 @@ function getLeaderAvatar() {
 }
 
 function getLeaderExperience() {
-  const current = teamLeaderInfo.value
-  if (!current) return ''
-
-  const matchedTranslation = (current.translations ?? []).find((item) =>
-    String(item?.languages_code || '')
-      .toLowerCase()
-      .startsWith(locale.value === 'en' ? 'en' : 'zh'),
-  )
-
-  const source = locale.value === 'en' ? matchedTranslation?.experience ?? current.experience : current.experience
-
-  if (Array.isArray(source)) {
-    return source
-      .map((item) => (typeof item === 'object' && item !== null ? String((item as { value?: unknown }).value ?? '') : String(item)))
-      .filter(Boolean)
-      .join('\n')
-  }
-
-  return String(source ?? '')
+  return getTranslatedExperienceField(teamLeaderInfo.value, locale.value)
 }
 
 onMounted(async () => {

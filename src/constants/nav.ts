@@ -14,6 +14,6 @@ export const navLinks: NavLink[] = [
 ]
 
 export const labName: LocalizedText = {
-  zh: '智能交互实验室',
-  en: 'IILab',
+  zh: 'EIT-NLP 实验室',
+  en: 'EIT-NLP Lab',
 }

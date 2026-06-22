@@ -340,7 +340,7 @@ export interface TeamLeaderInfoRecord {
   role?: string
   research?: string
   bio?: string
-  experience?: string
+  experience?: string | Array<{ value?: string }>
   translations?: Array<{
     [key: string]: unknown
     languages_code?: string
@@ -350,7 +350,7 @@ export interface TeamLeaderInfoRecord {
     role?: string
     research?: string
     bio?: string
-    experience?: string
+    experience?: string | Array<{ value?: string }>
   }>
 }
 

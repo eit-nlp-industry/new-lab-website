@@ -69,7 +69,10 @@ const introStats = computed(() => {
 const DEFAULT_HERO_IMAGE =
   'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1920&h=1080&fit=crop&q=80'
 
+const intruduceLoaded = ref(false)
+
 const heroImage = computed(() => {
+  if (!intruduceLoaded.value) return ''
   const bg = intruduceRawData.value?.background_img
   if (bg) {
     return directusPublicAssetUrl(bg)
@@ -97,6 +100,7 @@ onMounted(async () => {
   } else {
     console.error('[HomeView] fetchIntruduce failed:', intruduceResult.reason)
   }
+  intruduceLoaded.value = true
 
   if (newsResult.status === 'fulfilled') {
     newsList.value = newsResult.value?.data ?? []
@@ -110,9 +114,10 @@ onMounted(async () => {
   <div class="-mx-6 -mt-8 space-y-20 text-base sm:-mx-10 sm:space-y-24 lg:-mx-16">
     <!-- Hero -->
     <section
-      class="relative flex min-h-[min(88svh,720px)] items-end overflow-hidden sm:min-h-[min(78svh,680px)]"
+      class="relative flex min-h-[min(88svh,720px)] items-end overflow-hidden bg-slate-900 sm:min-h-[min(78svh,680px)]"
     >
       <img
+        v-if="heroImage"
         :src="heroImage"
         alt=""
         class="absolute inset-0 h-full w-full object-cover"
