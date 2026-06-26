@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { directusPublicAssetUrl, fetchIntruduce, fetchNews, fetchPapers, type NewsRecord } from '@/api/directus'
 import { useLocale } from '@/composables/useLocale'
-import { getTranslatedIntruduceField, type Intruduce } from '@/utils/intruduce'
+import { getTranslatedExtraInfo, getTranslatedIntruduceField, type Intruduce } from '@/utils/intruduce'
 import { formatAuthors, getPaperImage, type Paper } from '@/utils/paper'
 import { getTranslatedField } from '@/utils/translation'
 
@@ -44,27 +44,7 @@ function getNewsCover(item: NewsRecord) {
   return firstImage ? directusPublicAssetUrl(String(firstImage)) : ''
 }
 
-const introStats = computed(() => {
-  const introData = intruduceRawData.value?.introData?.[0]
-  return [
-    {
-      value: introData?.founded || '2018',
-      label: { zh: '成立年份', en: 'Founded' },
-    },
-    {
-      value: introData?.top_papers || '30+',
-      label: { zh: '顶会论文', en: 'Top Papers' },
-    },
-    {
-      value: introData?.members || '21',
-      label: { zh: '团队成员', en: 'Members' },
-    },
-    {
-      value: introData?.research_areas || '4',
-      label: { zh: '研究方向', en: 'Research Areas' },
-    },
-  ]
-})
+const introStats = computed(() => getTranslatedExtraInfo(intruduceRawData.value, locale.value))
 
 const DEFAULT_HERO_IMAGE =
   'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1920&h=1080&fit=crop&q=80'
@@ -194,14 +174,14 @@ onMounted(async () => {
             {{ introBody }}
           </p>
         </div>
-        <div class="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div v-if="introStats.length" class="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
           <div
-            v-for="stat in introStats"
-            :key="stat.label.zh"
+            v-for="(stat, index) in introStats"
+            :key="`${stat.label}-${index}`"
             class="rounded-xl border border-slate-100 bg-white px-5 py-4 text-center shadow-sm"
           >
             <p class="font-mono text-2xl font-bold text-slate-900 sm:text-3xl">{{ stat.value }}</p>
-            <p class="mt-1 text-sm text-slate-500 sm:text-base">{{ t(stat.label) }}</p>
+            <p class="mt-1 text-sm text-slate-500 sm:text-base">{{ stat.label }}</p>
           </div>
         </div>
       </div>

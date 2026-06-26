@@ -243,11 +243,9 @@ export interface IntruduceRecord {
   lab_name: string
   lab_description: string
   lab_about: string
-  introData?: Array<{
-    founded?: string
-    members?: string
-    research_areas?: string
-    top_papers?: string
+  extra_info?: Array<{
+    key?: string
+    value?: string
   }>
   background_img?: string | { id?: string }
   translations?: Array<{
@@ -256,6 +254,10 @@ export interface IntruduceRecord {
     lab_name?: string
     lab_description?: string
     lab_about?: string
+    extra_info?: Array<{
+      key?: string
+      value?: string
+    }>
   }>
 }
 
@@ -272,7 +274,7 @@ export async function fetchIntruduce(
   options: FetchIntruduceOptions = {},
 ): Promise<DirectusItemResponse<IntruduceRecord>> {
   const params = {
-    fields: 'tag,lab_name,lab_description,lab_about,introData,background_img,translations.*',
+    fields: 'tag,lab_name,lab_description,lab_about,extra_info,background_img,translations.*',
     limit: options.limit ?? 100,
     offset: options.offset ?? 0,
   }
@@ -295,6 +297,7 @@ export interface TeamMemberRecord {
   [key: string]: unknown
   id: number | string
   type?: string
+  order?: number
   name: string
   title?: string
   description?: string
@@ -314,7 +317,7 @@ export async function fetchTeamMember(
   options: FetchTeamMemberOptions = {},
 ): Promise<DirectusListResponse<TeamMemberRecord>> {
   const params: Record<string, any> = {
-    fields: 'id,type,name,title,description,avatar,link,translations.*',
+    fields: 'id,type,order,name,title,description,avatar,link,translations.*',
     limit: options.limit ?? 100,
     offset: options.offset ?? 0,
   }
@@ -587,4 +590,38 @@ export async function fetchContactUs(
 
 export function clearContactUsCache() {
   clearCacheByPathPrefix('/items/contactUs')
+}
+
+export type FetchTeamHistoryMemberOptions = DirectusGetOptions & {
+  limit?: number
+  offset?: number
+}
+
+export interface TeamHistoryMemberRecord {
+  [key: string]: unknown
+  id: number | string
+  assistant?: string
+  history?: string
+  translations?: Array<{
+    [key: string]: unknown
+    languages_code?: string
+    assistant?: string
+    history?: string
+  }>
+}
+
+/** 获取历史团队成员（含 translations，history 为 Markdown，单条记录） */
+export async function fetchTeamHistoryMember(
+  options: FetchTeamHistoryMemberOptions = {},
+): Promise<DirectusItemResponse<TeamHistoryMemberRecord>> {
+  const params = {
+    fields: 'id,history,assistant,translations.*',
+    limit: options.limit ?? 100,
+    offset: options.offset ?? 0,
+  }
+  return directusGet('/items/teamHistoryMember', params, options)
+}
+
+export function clearTeamHistoryMemberCache() {
+  clearCacheByPathPrefix('/items/teamHistoryMember')
 }

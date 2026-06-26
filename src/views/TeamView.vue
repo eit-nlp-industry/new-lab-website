@@ -2,22 +2,46 @@
 import { computed, onMounted, ref } from 'vue'
 import {
   directusPublicAssetUrl,
+  fetchTeamHistoryMember,
   fetchTeamLeaderInfo,
   fetchTeamMember,
+  type TeamHistoryMemberRecord,
   type TeamLeaderInfoRecord,
   type TeamMemberRecord,
 } from '@/api/directus'
 import { useLocale } from '@/composables/useLocale'
+import { renderMarkdown } from '@/utils/markdown'
 import { getTranslatedExperienceField, getTranslatedField } from '@/utils/translation'
 
 const { t, locale } = useLocale()
 const teamMembers = ref<TeamMemberRecord[]>([])
+const teamHistoryMember = ref<TeamHistoryMemberRecord | null>(null)
 const teamLeaderInfo = ref<TeamLeaderInfoRecord | null>(null)
 
 const defaultAvatar =
   'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"%3E%3Crect width="128" height="128" rx="64" fill="%23e0f2fe"/%3E%3Ccircle cx="64" cy="46" r="24" fill="%230e7490"/%3E%3Cpath d="M24 112c6-24 22-38 40-38s34 14 40 38" fill="%230e7490"/%3E%3C/svg%3E'
 
 const totalMembers = computed(() => teamMembers.value.length)
+
+function getTypeOrder(members: TeamMemberRecord[]) {
+  const order = Number(members[0]?.order)
+  return Number.isFinite(order) ? order : -1
+}
+
+function compareTypeGroups(
+  [, membersA]: [string, TeamMemberRecord[]],
+  [, membersB]: [string, TeamMemberRecord[]],
+) {
+  const orderA = getTypeOrder(membersA)
+  const orderB = getTypeOrder(membersB)
+  const isLastA = orderA === -1
+  const isLastB = orderB === -1
+
+  if (isLastA && isLastB) return 0
+  if (isLastA) return 1
+  if (isLastB) return -1
+  return orderA - orderB
+}
 
 const teamMemberGroups = computed(() => {
   const grouped = new Map<string, TeamMemberRecord[]>()
@@ -28,15 +52,33 @@ const teamMemberGroups = computed(() => {
     grouped.set(type, list)
   }
 
-  return [...grouped.entries()].map(([type, members]) => ({
-    key: type,
-    label: type,
-    members,
-  }))
+  return [...grouped.entries()]
+    .sort(compareTypeGroups)
+    .map(([type, members]) => ({
+      key: type,
+      label: getMemberType(members[0]) || type,
+      members,
+    }))
+})
+
+const teamAssistantHtml = computed(() => {
+  if (!teamHistoryMember.value) return ''
+  const markdown = getTranslatedField(teamHistoryMember.value, 'assistant', locale.value).trim()
+  return markdown ? renderMarkdown(markdown) : ''
+})
+
+const teamHistoryHtml = computed(() => {
+  if (!teamHistoryMember.value) return ''
+  const markdown = getTranslatedField(teamHistoryMember.value, 'history', locale.value).trim()
+  return markdown ? renderMarkdown(markdown) : ''
 })
 
 function getMemberName(member: TeamMemberRecord) {
   return getTranslatedField(member, 'name', locale.value)
+}
+
+function getMemberType(member: TeamMemberRecord) {
+  return getTranslatedField(member, 'type', locale.value)
 }
 
 function getMemberRole(member: TeamMemberRecord) {
@@ -69,9 +111,10 @@ function getLeaderExperience() {
 }
 
 onMounted(async () => {
-  const [memberResult, leaderResult] = await Promise.allSettled([
+  const [memberResult, leaderResult, historyResult] = await Promise.allSettled([
     fetchTeamMember(),
     fetchTeamLeaderInfo(),
+    fetchTeamHistoryMember(),
   ])
 
   if (memberResult.status === 'fulfilled') {
@@ -84,6 +127,12 @@ onMounted(async () => {
     teamLeaderInfo.value = leaderResult.value?.data ?? null
   } else {
     console.error('[TeamView] fetchTeamLeaderInfo failed:', leaderResult.reason)
+  }
+
+  if (historyResult.status === 'fulfilled') {
+    teamHistoryMember.value = historyResult.value?.data ?? null
+  } else {
+    console.error('[TeamView] fetchTeamHistoryMember failed:', historyResult.reason)
   }
 })
 </script>
@@ -216,7 +265,7 @@ onMounted(async () => {
             :id="`group-${group.key}`"
             class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl"
           >
-            {{ group.label }}
+            {{ getMemberType(group.members[0]) || group.key }}
           </h3>
           <span
             class="w-fit rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-600 sm:text-base"
@@ -225,17 +274,17 @@ onMounted(async () => {
           </span>
         </div>
 
-        <div class="mt-7 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+        <div class="mt-6 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
           <article
             v-for="member in group.members"
             :key="member.id"
-            class="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition-all hover:-translate-y-1 hover:border-cyan-200/60 hover:shadow-lg"
+            class="group relative flex flex-col overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-cyan-200/60 hover:shadow-md"
           >
             <div
-              class="absolute top-0 right-0 left-0 h-28 bg-gradient-to-br from-slate-100 to-cyan-50/50"
+              class="absolute top-0 right-0 left-0 h-20 bg-gradient-to-br from-slate-100 to-cyan-50/50"
               aria-hidden="true"
             />
-            <div class="relative px-6 pt-6 pb-6">
+            <div class="relative px-4 pt-4 pb-4">
               <div class="relative mx-auto w-fit">
                 <div
                   class="absolute -inset-1 rounded-full bg-gradient-to-br from-cyan-400/40 to-slate-300/40 opacity-0 blur transition-opacity group-hover:opacity-100"
@@ -244,12 +293,12 @@ onMounted(async () => {
                 <img
                   :src="getMemberAvatar(member)"
                   :alt="getMemberName(member)"
-                  class="relative h-28 w-28 rounded-full object-cover ring-4 ring-white sm:h-32 sm:w-32"
+                  class="relative h-20 w-20 rounded-full object-cover ring-2 ring-white sm:h-24 sm:w-24"
                   loading="lazy"
                 />
               </div>
-              <div class="mt-5 text-center">
-                <h4 class="text-xl font-semibold text-slate-900 sm:text-2xl">
+              <div class="mt-3 text-center">
+                <h4 class="text-base font-semibold text-slate-900 sm:text-lg">
                   <a
                     v-if="getMemberLink(member)"
                     :href="getMemberLink(member)"
@@ -261,18 +310,57 @@ onMounted(async () => {
                   </a>
                   <template v-else>{{ getMemberName(member) }}</template>
                 </h4>
-                <p class="mt-2 text-base font-medium text-cyan-700 sm:text-lg">
+                <p class="mt-1.5 text-sm font-medium text-cyan-700">
                   {{ getMemberRole(member) }}
                 </p>
               </div>
               <p
-                class="mt-5 rounded-lg bg-slate-50 px-4 py-3 text-center text-sm leading-relaxed text-slate-600 sm:text-base"
+                class="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-center text-xs leading-relaxed text-slate-600 sm:text-sm"
               >
                 {{ getMemberResearch(member) }}
               </p>
             </div>
           </article>
         </div>
+      </div>
+
+      <!-- 科研助理 -->
+      <div
+        v-if="teamAssistantHtml"
+        class="scroll-mt-24"
+        aria-labelledby="assistant-heading"
+      >
+        <div
+          class="flex flex-col gap-2 border-b border-slate-200/80 pb-4 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <h3
+            id="assistant-heading"
+            class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl"
+          >
+            {{ t({ zh: '科研助理', en: 'Research Assistants' }) }}
+          </h3>
+        </div>
+
+        <div class="markdown-content mt-6" v-html="teamAssistantHtml" />
+      </div>
+
+      <div
+        v-if="teamHistoryHtml"
+        class="scroll-mt-24"
+        aria-labelledby="history-members-heading"
+      >
+        <div
+          class="flex flex-col gap-2 border-b border-slate-200/80 pb-4 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <h3
+            id="history-members-heading"
+            class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl"
+          >
+            {{ t({ zh: '历史成员', en: 'History Members' }) }}
+          </h3>
+        </div>
+
+        <div class="markdown-content mt-6" v-html="teamHistoryHtml" />
       </div>
     </section>
   </div>
