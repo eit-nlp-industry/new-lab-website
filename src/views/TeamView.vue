@@ -246,10 +246,10 @@ onMounted(async () => {
             {{ t({ zh: '团队成员', en: 'Team Members' }) }}
           </h2>
         </div>
-        <p class="text-base text-slate-500 sm:text-lg">
+        <!-- <p class="text-base text-slate-500 sm:text-lg">
           {{ totalMembers }}
           {{ t({ zh: ' 人', en: ' members' }) }}
-        </p>
+        </p> -->
       </div>
 
       <div
@@ -356,7 +356,7 @@ onMounted(async () => {
             id="history-members-heading"
             class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl"
           >
-            {{ t({ zh: '历史成员', en: 'History Members' }) }}
+            {{ t({ zh: '历史成员', en: 'Alumni' }) }}
           </h3>
         </div>
 

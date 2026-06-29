@@ -174,11 +174,17 @@ onMounted(async () => {
             {{ introBody }}
           </p>
         </div>
-        <div v-if="introStats.length" class="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div
+          v-if="introStats.length"
+          :class="['mt-10 flex gap-4', introStats.length === 1 ? 'justify-center' : '']"
+        >
           <div
             v-for="(stat, index) in introStats"
             :key="`${stat.label}-${index}`"
-            class="rounded-xl border border-slate-100 bg-white px-5 py-4 text-center shadow-sm"
+            :class="[
+              'rounded-xl border border-slate-100 bg-white px-5 py-4 text-center shadow-sm',
+              introStats.length === 1 ? 'w-full max-w-xs' : 'min-w-0 flex-1',
+            ]"
           >
             <p class="font-mono text-2xl font-bold text-slate-900 sm:text-3xl">{{ stat.value }}</p>
             <p class="mt-1 text-sm text-slate-500 sm:text-base">{{ stat.label }}</p>
