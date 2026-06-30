@@ -12,6 +12,7 @@ import {
 import { useLocale } from '@/composables/useLocale'
 import { renderMarkdown } from '@/utils/markdown'
 import { getTranslatedExperienceField, getTranslatedField } from '@/utils/translation'
+import { normalizeExternalUrl } from '@/utils/url'
 
 const { t, locale } = useLocale()
 const teamMembers = ref<TeamMemberRecord[]>([])
@@ -21,7 +22,7 @@ const teamLeaderInfo = ref<TeamLeaderInfoRecord | null>(null)
 const defaultAvatar =
   'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128"%3E%3Crect width="128" height="128" rx="64" fill="%23e0f2fe"/%3E%3Ccircle cx="64" cy="46" r="24" fill="%230e7490"/%3E%3Cpath d="M24 112c6-24 22-38 40-38s34 14 40 38" fill="%230e7490"/%3E%3C/svg%3E'
 
-const totalMembers = computed(() => teamMembers.value.length)
+// const totalMembers = computed(() => teamMembers.value.length)
 
 function getTypeOrder(members: TeamMemberRecord[]) {
   const order = Number(members[0]?.order)
@@ -94,8 +95,7 @@ function getMemberAvatar(member: TeamMemberRecord) {
 }
 
 function getMemberLink(member: TeamMemberRecord) {
-  const link = String(member.link ?? '').trim()
-  return link || ''
+  return normalizeExternalUrl(member.link)
 }
 
 function getLeaderField(field: string) {

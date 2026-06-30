@@ -226,6 +226,39 @@ export async function fetchPapers(options: FetchPapersOptions = {}) {
   return data
 }
 
+export type FetchPatentsOptions = DirectusGetOptions & {
+  limit?: number
+  offset?: number
+}
+
+export interface PatentRecord {
+  [key: string]: unknown
+  id: number | string
+  title?: string
+  image?: string | { id?: string; filename_disk?: string } | null
+  translations?: Array<{
+    [key: string]: unknown
+    languages_code?: string
+    title?: string
+  }>
+}
+
+/** 获取专利列表（含 translations，前端按语言切换） */
+export async function fetchPatents(
+  options: FetchPatentsOptions = {},
+): Promise<DirectusListResponse<PatentRecord>> {
+  const params = {
+    fields: 'id,title,image,translations.*',
+    limit: options.limit ?? 100,
+    offset: options.offset ?? 0,
+  }
+  return directusGet('/items/patent', params, options)
+}
+
+export function clearPatentsCache() {
+  clearCacheByPathPrefix('/items/patent')
+}
+
 export function clearAllDirectusCache() {
   requestCache.clear()
   pendingRequestCache.clear()

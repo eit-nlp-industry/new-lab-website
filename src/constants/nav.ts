@@ -6,7 +6,7 @@ export interface NavLink extends NavItem {
 
 export const navLinks: NavLink[] = [
   { key: 'home', path: '/', label: { zh: '首页', en: 'Home' } },
-  { key: 'publications', path: '/publications', label: { zh: '论文', en: 'Publications' } },
+  { key: 'publications', path: '/publications', label: { zh: '成果', en: 'Achievements' } },
   { key: 'team', path: '/team', label: { zh: '团队', en: 'Team' } },
   { key: 'news', path: '/news', label: { zh: '新闻', en: 'News' } },
   { key: 'projects', path: '/projects', label: { zh: '项目', en: 'Projects' } },
