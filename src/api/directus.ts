@@ -593,6 +593,8 @@ export interface ContactUsRecord {
   address?: string
   email?: string
   github?: string
+  red_note?: string
+  red_note_QR?: string | { id?: string; filename_disk?: string } | null
   WeChat_QR?: string | { id?: string; filename_disk?: string } | null
   tip?: string
   translations?: Array<{
@@ -603,6 +605,8 @@ export interface ContactUsRecord {
     address?: string
     email?: string
     github?: string
+    red_note?: string
+    red_note_QR?: string | { id?: string; filename_disk?: string } | null
     WeChat_QR?: string | { id?: string; filename_disk?: string } | null
     tip?: string
   }>
@@ -614,7 +618,7 @@ export async function fetchContactUs(
 ): Promise<DirectusItemResponse<ContactUsRecord>> {
   const params = {
     fields:
-      'id,labName,copyright,address,email,github,WeChat_QR,tip,translations.*',
+      'id,labName,copyright,address,email,github,red_note,red_note_QR,WeChat_QR,tip,translations.*',
     limit: options.limit ?? 100,
     offset: options.offset ?? 0,
   }

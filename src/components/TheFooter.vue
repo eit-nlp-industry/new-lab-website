@@ -4,6 +4,7 @@ import { directusPublicAssetUrl, fetchContactUs, type ContactUsRecord } from '@/
 import { useLocale } from '@/composables/useLocale'
 import { labName as defaultLabName } from '@/constants/nav'
 import { getTranslatedField } from '@/utils/translation'
+import { normalizeExternalUrl } from '@/utils/url'
 
 const { t, locale } = useLocale()
 const contactUs = ref<ContactUsRecord | null>(null)
@@ -27,12 +28,21 @@ const address = computed(() => getTranslatedField(contactUs.value, 'address', lo
 
 const email = computed(() => getTranslatedField(contactUs.value, 'email', locale.value))
 
-const githubUrl = computed(() => getTranslatedField(contactUs.value, 'github', locale.value))
+const githubUrl = computed(() => normalizeExternalUrl(getTranslatedField(contactUs.value, 'github', locale.value)))
+
+const redNoteUrl = computed(() =>
+  normalizeExternalUrl(getTranslatedField(contactUs.value, 'red_note', locale.value)),
+)
 
 const contactTip = computed(() => getTranslatedField(contactUs.value, 'tip', locale.value))
 
 const weChatQrUrl = computed(() => {
   const qr = contactUs.value?.WeChat_QR
+  return qr ? directusPublicAssetUrl(qr) : ''
+})
+
+const redNoteQrUrl = computed(() => {
+  const qr = contactUs.value?.red_note_QR
   return qr ? directusPublicAssetUrl(qr) : ''
 })
 
@@ -148,6 +158,62 @@ async function onEmailClick() {
                 />
               </svg>
             </a>
+
+            <!-- Xiaohongshu (RED) -->
+            <div
+              v-if="redNoteUrl || redNoteQrUrl"
+              class="relative"
+              :class="{ group: redNoteQrUrl }"
+            >
+              <a
+                v-if="redNoteUrl"
+                :href="redNoteUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="group/icon inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition-all hover:-translate-y-1 hover:border-cyan-400/30 hover:bg-white/10 hover:text-cyan-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60"
+                :aria-label="t({ zh: '小红书', en: 'Xiaohongshu' })"
+              >
+                <svg class="h-5 w-5 transition-transform group-hover/icon:scale-105" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path
+                    d="M7.2 3.456h9.6c.99 0 1.8.81 1.8 1.8v13.488c0 .99-.81 1.8-1.8 1.8H7.2c-.99 0-1.8-.81-1.8-1.8V5.256c0-.99.81-1.8 1.8-1.8zm2.304 3.6c.662 0 1.2.538 1.2 1.2v.72h3.792v-.72c0-.662.538-1.2 1.2-1.2h.504c.662 0 1.2.538 1.2 1.2v8.688c0 .662-.538 1.2-1.2 1.2h-.504c-.662 0-1.2-.538-1.2-1.2v-.72H10.704v.72c0 .662-.538 1.2-1.2 1.2H9c-.662 0-1.2-.538-1.2-1.2V8.256c0-.662.538-1.2 1.2-1.2h.504z"
+                  />
+                </svg>
+              </a>
+              <span
+                v-else
+                class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300"
+                :aria-label="t({ zh: '小红书二维码', en: 'Xiaohongshu QR' })"
+              >
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path
+                    d="M7.2 3.456h9.6c.99 0 1.8.81 1.8 1.8v13.488c0 .99-.81 1.8-1.8 1.8H7.2c-.99 0-1.8-.81-1.8-1.8V5.256c0-.99.81-1.8 1.8-1.8zm2.304 3.6c.662 0 1.2.538 1.2 1.2v.72h3.792v-.72c0-.662.538-1.2 1.2-1.2h.504c.662 0 1.2.538 1.2 1.2v8.688c0 .662-.538 1.2-1.2 1.2h-.504c-.662 0-1.2-.538-1.2-1.2v-.72H10.704v.72c0 .662-.538 1.2-1.2 1.2H9c-.662 0-1.2-.538-1.2-1.2V8.256c0-.662.538-1.2 1.2-1.2h.504z"
+                  />
+                </svg>
+              </span>
+
+              <div
+                v-if="redNoteQrUrl"
+                class="pointer-events-none absolute bottom-full left-1/2 mb-4 w-64 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0"
+              >
+                <div class="rounded-2xl border border-white/10 bg-slate-950/95 p-4 shadow-2xl shadow-black/40 backdrop-blur">
+                  <div class="mb-3 flex items-center justify-between">
+                    <p class="font-mono text-xs font-medium tracking-widest text-cyan-300/90 uppercase">
+                      {{ t({ zh: '小红书', en: 'Xiaohongshu' }) }}
+                    </p>
+                    <span class="text-xs text-slate-500">{{ t({ zh: '扫码关注', en: 'Scan to follow' }) }}</span>
+                  </div>
+                  <div class="grid place-items-center rounded-xl border border-white/10 bg-white/5 p-4">
+                    <img
+                      :src="redNoteQrUrl"
+                      :alt="t({ zh: '小红书二维码', en: 'Xiaohongshu QR code' })"
+                      class="h-40 w-40 rounded-lg object-contain sm:h-44 sm:w-44"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+                <div class="mx-auto mt-2 h-2 w-2 rotate-45 border border-white/10 bg-slate-950/95" />
+              </div>
+            </div>
 
             <!-- WeChat (hover popover) -->
             <div v-if="weChatQrUrl" class="group relative">
