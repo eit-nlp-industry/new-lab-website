@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { directusPublicAssetUrl, fetchContactUs, type ContactUsRecord } from '@/api/directus'
 import { useLocale } from '@/composables/useLocale'
 import { labName as defaultLabName } from '@/constants/nav'
@@ -10,12 +10,17 @@ const { t, locale } = useLocale()
 const contactUs = ref<ContactUsRecord | null>(null)
 
 onMounted(async () => {
+  document.addEventListener('click', onDocumentClick)
   try {
     const res = await fetchContactUs()
     contactUs.value = res.data ?? null
   } catch (e) {
     console.error('[TheFooter] fetchContactUs failed:', e)
   }
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', onDocumentClick)
 })
 
 const footerLabName = computed(
@@ -48,7 +53,21 @@ const redNoteQrUrl = computed(() => {
 
 const toastOpen = ref(false)
 const toastText = ref('')
+const weChatPopoverOpen = ref(false)
+const weChatPopoverRef = ref<HTMLElement | null>(null)
 let toastTimer: number | undefined
+
+function toggleWeChatPopover() {
+  weChatPopoverOpen.value = !weChatPopoverOpen.value
+}
+
+function onDocumentClick(event: MouseEvent) {
+  const target = event.target as Node | null
+  if (!target) return
+  if (!weChatPopoverRef.value?.contains(target)) {
+    weChatPopoverOpen.value = false
+  }
+}
 
 function showToast(message: string) {
   toastText.value = message
@@ -216,11 +235,12 @@ async function onEmailClick() {
             </div>
 
             <!-- WeChat (hover popover) -->
-            <div v-if="weChatQrUrl" class="group relative">
+            <div v-if="weChatQrUrl" ref="weChatPopoverRef" class="group relative">
               <button
                 type="button"
                 class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition-all hover:-translate-y-1 hover:border-cyan-400/30 hover:bg-white/10 hover:text-cyan-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/60"
                 :aria-label="t({ zh: '微信公众号二维码', en: 'WeChat QR' })"
+                @click="toggleWeChatPopover"
               >
                 <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path
@@ -237,7 +257,8 @@ async function onEmailClick() {
               </button>
 
               <div
-                class="pointer-events-none absolute bottom-full left-1/2 mb-4 w-64 -translate-x-1/2 opacity-0 transition-all duration-200 group-hover:opacity-100 group-hover:translate-y-0"
+                class="pointer-events-none absolute bottom-full left-1/2 mb-4 w-64 -translate-x-1/2 transition-all duration-200"
+                :class="weChatPopoverOpen ? 'translate-y-0 opacity-100' : 'translate-y-1 opacity-0'"
               >
                 <div class="rounded-2xl border border-white/10 bg-slate-950/95 p-4 shadow-2xl shadow-black/40 backdrop-blur">
                   <div class="mb-3 flex items-center justify-between">

@@ -7,8 +7,28 @@ import { getTranslatedField } from '@/utils/translation'
 const { t, locale } = useLocale()
 const newsList = ref<NewsRecord[]>([])
 
+function parseNewsDate(value: unknown) {
+  const raw = String(value ?? '').trim()
+  if (!raw) return Number.NEGATIVE_INFINITY
+
+  const zhMatch = raw.match(/(\d{4})年\s*(\d{1,2})月(?:\s*(\d{1,2})日)?/)
+  if (zhMatch) {
+    const year = Number(zhMatch[1])
+    const month = Number(zhMatch[2]) - 1
+    const day = Number(zhMatch[3] ?? 1)
+    return new Date(year, month, day).getTime()
+  }
+
+  const parsed = Date.parse(raw)
+  return Number.isNaN(parsed) ? Number.NEGATIVE_INFINITY : parsed
+}
+
 const sortedNews = computed(() =>
-  [...newsList.value].sort((a, b) => String(b.date || '').localeCompare(String(a.date || ''))),
+  [...newsList.value].sort((a, b) => {
+    const timeDiff = parseNewsDate(b.date) - parseNewsDate(a.date)
+    if (timeDiff !== 0) return timeDiff
+    return String(b.date || '').localeCompare(String(a.date || ''))
+  }),
 )
 
 function getNewsField(item: NewsRecord, field: 'title' | 'description' | 'date') {

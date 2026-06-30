@@ -10,6 +10,7 @@ export default defineConfig(({ mode }) => {
   const proxyTarget = env.VITE_DEV_PROXY_TARGET || 'http://10.37.0.21:7000'
 
   return {
+  base: env.VITE_BASE_URL || '/',
   plugins: [
     vue(),
     tailwindcss(),
