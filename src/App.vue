@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { preloadRouteComponent } from '@/router'
 import LangSwitch from '@/components/common/LangSwitch.vue'
 import TheFooter from '@/components/TheFooter.vue'
 import { labName, navLinks } from '@/constants/nav'
@@ -22,6 +23,20 @@ function isActive(path: string) {
   if (path === '/') return route.path === '/'
   return route.path.startsWith(path)
 }
+
+function preloadNavRoute(path: string) {
+  preloadRouteComponent(path)
+}
+
+onMounted(() => {
+  window.setTimeout(() => {
+    for (const item of navLinks) {
+      if (item.path !== route.path) {
+        preloadRouteComponent(item.path)
+      }
+    }
+  }, 1200)
+})
 
 watch(() => route.path, closeMobileMenu)
 </script>
@@ -49,6 +64,8 @@ watch(() => route.path, closeMobileMenu)
                 ? 'bg-cyan-50 text-cyan-800'
                 : 'text-slate-600 hover:bg-slate-50 hover:text-cyan-900'
             "
+            @mouseenter="preloadNavRoute(item.path)"
+            @focus="preloadNavRoute(item.path)"
           >
             {{ t(item.label) }}
           </RouterLink>
@@ -107,6 +124,7 @@ watch(() => route.path, closeMobileMenu)
                 ? 'bg-cyan-50 text-cyan-800'
                 : 'text-slate-600 hover:bg-slate-50 hover:text-cyan-900'
             "
+            @touchstart="preloadNavRoute(item.path)"
             @click="closeMobileMenu"
           >
             {{ t(item.label) }}
