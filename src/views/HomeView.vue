@@ -138,7 +138,7 @@ onMounted(async () => {
             to="/publications"
             class="inline-flex items-center justify-center rounded-lg bg-cyan-500 px-6 py-3 text-base font-semibold text-slate-950 transition-colors hover:bg-cyan-400"
           >
-            {{ t({ zh: '浏览论文', en: 'Publications' }) }}
+            {{ t({ zh: '浏览成果', en: 'Browse Achievements' }) }}
           </RouterLink>
           <RouterLink
             to="/team"
