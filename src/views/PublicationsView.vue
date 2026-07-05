@@ -41,15 +41,21 @@ const sectionAnchors = computed(() => {
       count: totalCount.value,
       unit: t({ zh: '篇', en: '' }),
     },
-  ]
-  if (patents.value.length) {
-    anchors.push({
+    {
       id: 'patents',
       label: t({ zh: '专利', en: 'Patents' }),
       count: patents.value.length,
       unit: t({ zh: '项', en: '' }),
-    })
-  }
+    },
+  ]
+  // if (patents.value.length) {
+  //   anchors.push({
+  //     id: 'patents',
+  //     label: t({ zh: '专利', en: 'Patents' }),
+  //     count: patents.value.length,
+  //     unit: t({ zh: '项', en: '' }),
+  //   })
+  // }
   return anchors
 })
 
@@ -67,6 +73,10 @@ function openPatentPreview(patent: { title: string; image: string }) {
 
 function closePatentPreview() {
   previewPatent.value = null
+}
+
+function scrollToSection(id: string) {
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 function onPreviewKeydown(event: KeyboardEvent) {
@@ -122,17 +132,18 @@ onUnmounted(() => {
         class="mt-6 flex flex-wrap gap-3"
         :aria-label="t({ zh: '成果导航', en: 'Section navigation' })"
       >
-        <a
+        <button
           v-for="anchor in sectionAnchors"
           :key="anchor.id"
-          :href="`#${anchor.id}`"
+          type="button"
           class="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition-colors hover:border-cyan-200 hover:bg-cyan-50 hover:text-cyan-800 sm:px-5 sm:py-2.5 sm:text-base"
+          @click="scrollToSection(anchor.id)"
         >
           {{ anchor.label }}
           <span class="font-mono text-xs text-slate-400 sm:text-sm">
             {{ anchor.count }}{{ anchor.unit }}
           </span>
-        </a>
+        </button>
       </nav>
     </header>
 
