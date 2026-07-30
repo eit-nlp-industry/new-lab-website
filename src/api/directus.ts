@@ -9,7 +9,7 @@ const BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
   (import.meta.env.DEV ? '/nlp-api' : 'https://idt.eitech.edu.cn/nlp-api')
 
-const API_TOKEN = import.meta.env.VITE_API_TOKEN || '_G3jnm6gmjO7eZMkfmj6kOrYtl1o07eY'
+const API_TOKEN = import.meta.env.VITE_API_TOKEN || 'fMniPSvlKhkMtbVHdH4yv9Vr-fdIrnW7'
 
 const requestCache = new Map<string, any>()
 const pendingRequestCache = new Map<string, Promise<any>>()
@@ -147,7 +147,7 @@ async function directusGet(path: string, params: Record<string, any> = {}, optio
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    // ...(token ? { Authorization: `Bearer ${token}` } : {}),
   }
 
   try {
