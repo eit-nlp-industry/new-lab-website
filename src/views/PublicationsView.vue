@@ -1,13 +1,21 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useLocale } from '@/composables/useLocale'
-import { directusPublicAssetUrl, fetchPapers, fetchPatents, type PatentRecord } from '@/api/directus'
+import {
+  directusPublicAssetUrl,
+  fetchPapers,
+  fetchPatents,
+  fetchPdfTable,
+  type PatentRecord,
+  type PdfTableRecord,
+} from '@/api/directus'
 import { formatAuthors, getPaperImage, type Paper } from '@/utils/paper'
 import { getTranslatedField } from '@/utils/translation'
 
 const { t, locale } = useLocale()
 const papers = ref<Paper[]>([])
 const patentRecords = ref<PatentRecord[]>([])
+const pdfTableRecords = ref<PdfTableRecord[]>([])
 
 const publishedPapers = computed(() => papers.value.filter((p) => p.status === 'published'))
 
@@ -19,6 +27,23 @@ const patents = computed(() =>
       image: patent.image ? directusPublicAssetUrl(patent.image) : '',
     }))
     .filter((patent) => patent.title),
+)
+
+const researchGuideRows = computed(() =>
+  pdfTableRecords.value
+    .map((row) => {
+      const sortNum = Number(row.sort)
+      return {
+        id: row.id,
+        stepLabel: getTranslatedField(row, 'step_label', locale.value),
+        title: getTranslatedField(row, 'title', locale.value),
+        description: getTranslatedField(row, 'description', locale.value),
+        pdfUrl: row.pdf ? directusPublicAssetUrl(row.pdf) : '',
+        sort: Number.isFinite(sortNum) ? sortNum : Number.MAX_SAFE_INTEGER,
+      }
+    })
+    .filter((row) => row.stepLabel || row.title || row.description)
+    .sort((a, b) => a.sort - b.sort || Number(a.id) - Number(b.id)),
 )
 
 const totalCount = computed(() => publishedPapers.value.length)
@@ -95,9 +120,14 @@ watch(previewPatent, (value) => {
 
 onMounted(async () => {
   try {
-    const [papersRes, patentsRes] = await Promise.all([fetchPapers(), fetchPatents()])
+    const [papersRes, patentsRes, pdfTableRes] = await Promise.all([
+      fetchPapers(),
+      fetchPatents(),
+      fetchPdfTable(),
+    ])
     papers.value = papersRes?.data ?? []
     patentRecords.value = patentsRes?.data ?? []
+    pdfTableRecords.value = pdfTableRes?.data ?? []
   } catch (e) {
     console.error('[PublicationsView] fetch data failed:', e)
   }
@@ -146,6 +176,75 @@ onUnmounted(() => {
         </button>
       </nav>
     </header>
+
+    <section
+      v-if="researchGuideRows.length"
+      id="research-guide"
+      class="scroll-mt-24"
+      aria-labelledby="research-guide-heading"
+    >
+      <h2
+        id="research-guide-heading"
+        class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl"
+      >
+        {{ t({ zh: '研究指南', en: 'Research Guide' }) }}
+      </h2>
+
+      <div class="mt-6 overflow-x-auto">
+        <table class="w-full min-w-[40rem] border-collapse text-left">
+          <thead>
+            <tr class="border-b border-slate-200">
+              <th scope="col" class="w-[28%] py-3 pr-4 text-sm font-medium text-slate-500 sm:text-base">
+                <span class="sr-only">{{ t({ zh: '步骤', en: 'Step' }) }}</span>
+              </th>
+              <th scope="col" class="py-3 pr-4 text-sm font-medium text-slate-500 sm:text-base">
+                {{ t({ zh: '内容', en: 'Content' }) }}
+              </th>
+              <th
+                scope="col"
+                class="w-28 py-3 text-right text-sm font-medium text-slate-500 sm:w-36 sm:text-base"
+              >
+                PDF
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="row in researchGuideRows"
+              :key="row.id"
+              class="border-b border-slate-200 align-top last:border-b-0"
+            >
+              <td class="py-5 pr-4 text-sm font-medium text-slate-800 sm:py-6 sm:text-base">
+                {{ row.stepLabel }}
+              </td>
+              <td class="py-5 pr-4 sm:py-6">
+                <p v-if="row.title" class="text-base font-semibold text-slate-900 sm:text-lg">
+                  {{ row.title }}
+                </p>
+                <p
+                  v-if="row.description"
+                  class="mt-2 text-sm leading-relaxed text-slate-600 sm:text-base"
+                >
+                  {{ row.description }}
+                </p>
+              </td>
+              <td class="py-5 text-right sm:py-6">
+                <a
+                  v-if="row.pdfUrl"
+                  :href="row.pdfUrl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center gap-1 text-sm font-medium text-cyan-700 transition-colors hover:text-cyan-900 sm:text-base"
+                >
+                  {{ t({ zh: '阅读 PDF', en: 'Read PDF' }) }}
+                  <span aria-hidden="true">→</span>
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
     <section
       id="publications"

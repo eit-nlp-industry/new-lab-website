@@ -259,6 +259,46 @@ export function clearPatentsCache() {
   clearCacheByPathPrefix('/items/patent')
 }
 
+export type FetchPdfTableOptions = DirectusGetOptions & {
+  limit?: number
+  offset?: number
+}
+
+export interface PdfTableRecord {
+  [key: string]: unknown
+  id: number | string
+  step_label?: string
+  title?: string
+  description?: string
+  /** Directus File 字段（上传的 PDF） */
+  pdf?: string | { id?: string; filename_disk?: string } | null
+  sort?: number
+  translations?: Array<{
+    [key: string]: unknown
+    languages_code?: string
+    step_label?: string
+    title?: string
+    description?: string
+  }>
+}
+
+/** 获取 Research Guide 表格（含 translations，前端按语言切换） */
+export async function fetchPdfTable(
+  options: FetchPdfTableOptions = {},
+): Promise<DirectusListResponse<PdfTableRecord>> {
+  const params = {
+    fields: 'id,step_label,title,description,pdf,sort,translations.*',
+    sort: 'sort',
+    limit: options.limit ?? 100,
+    offset: options.offset ?? 0,
+  }
+  return directusGet('/items/pdfTable', params, options)
+}
+
+export function clearPdfTableCache() {
+  clearCacheByPathPrefix('/items/pdfTable')
+}
+
 export function clearAllDirectusCache() {
   requestCache.clear()
   pendingRequestCache.clear()
