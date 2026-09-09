@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { directusPublicAssetUrl, fetchIntruduce, fetchNews, fetchPapers, type NewsRecord } from '@/api/directus'
 import { useLocale } from '@/composables/useLocale'
 import { getTranslatedExtraInfo, getTranslatedIntruduceField, type Intruduce } from '@/utils/intruduce'
-import { formatAuthors, getPaperImage, type Paper } from '@/utils/paper'
+import { formatAuthors, getPaperImage, resolvePaperYear, type Paper } from '@/utils/paper'
 import { getTranslatedField } from '@/utils/translation'
 
 const { t, locale } = useLocale()
@@ -241,9 +241,9 @@ onMounted(async () => {
                   class="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-cyan-950"
                 >
                   <span class="font-mono text-4xl font-bold text-cyan-300/90 sm:text-5xl">
-                    {{ String(featuredPaper.year).slice(2) }}
+                    {{ String(resolvePaperYear(featuredPaper) || '').slice(-2) }}
                   </span>
-                  <span class="mt-1 font-mono text-sm text-slate-400">{{ featuredPaper.year }}</span>
+                  <span class="mt-1 font-mono text-sm text-slate-400">{{ resolvePaperYear(featuredPaper) || '—' }}</span>
                 </div>
                 <div
                   class="absolute inset-0 bg-gradient-to-t from-slate-900/30 via-transparent to-transparent md:bg-gradient-to-r md:from-transparent md:to-slate-900/5"
@@ -312,9 +312,9 @@ onMounted(async () => {
                     class="flex h-full min-h-[5.5rem] w-full flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-cyan-950 sm:absolute sm:inset-0"
                   >
                     <span class="font-mono text-2xl font-bold text-cyan-300/90">
-                      {{ String(pub.year).slice(2) }}
+                      {{ String(resolvePaperYear(pub) || '').slice(-2) }}
                     </span>
-                    <span class="mt-0.5 font-mono text-xs text-slate-400">{{ pub.year }}</span>
+                    <span class="mt-0.5 font-mono text-xs text-slate-400">{{ resolvePaperYear(pub) || '—' }}</span>
                   </div>
                 </div>
 

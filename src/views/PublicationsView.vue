@@ -9,7 +9,7 @@ import {
   type PatentRecord,
   type PdfTableRecord,
 } from '@/api/directus'
-import { formatAuthors, getPaperImage, type Paper } from '@/utils/paper'
+import { formatAuthors, getPaperImage, resolvePaperYear, type Paper } from '@/utils/paper'
 import { getTranslatedField } from '@/utils/translation'
 
 const { t, locale } = useLocale()
@@ -51,9 +51,10 @@ const totalCount = computed(() => publishedPapers.value.length)
 const publicationsByYear = computed(() => {
   const grouped = new Map<number, Paper[]>()
   for (const pub of publishedPapers.value) {
-    const list = grouped.get(pub.year) ?? []
+    const year = resolvePaperYear(pub)
+    const list = grouped.get(year) ?? []
     list.push(pub)
-    grouped.set(pub.year, list)
+    grouped.set(year, list)
   }
   return [...grouped.entries()].sort(([yearA], [yearB]) => yearB - yearA)
 })
@@ -119,17 +120,28 @@ watch(previewPatent, (value) => {
 })
 
 onMounted(async () => {
-  try {
-    const [papersRes, patentsRes, pdfTableRes] = await Promise.all([
-      fetchPapers(),
-      fetchPatents(),
-      fetchPdfTable(),
-    ])
-    papers.value = papersRes?.data ?? []
-    patentRecords.value = patentsRes?.data ?? []
-    pdfTableRecords.value = pdfTableRes?.data ?? []
-  } catch (e) {
-    console.error('[PublicationsView] fetch data failed:', e)
+  const [papersResult, patentsResult, pdfTableResult] = await Promise.allSettled([
+    fetchPapers(),
+    fetchPatents(),
+    fetchPdfTable(),
+  ])
+
+  if (papersResult.status === 'fulfilled') {
+    papers.value = papersResult.value?.data ?? []
+  } else {
+    console.error('[PublicationsView] fetchPapers failed:', papersResult.reason)
+  }
+
+  if (patentsResult.status === 'fulfilled') {
+    patentRecords.value = patentsResult.value?.data ?? []
+  } else {
+    console.error('[PublicationsView] fetchPatents failed:', patentsResult.reason)
+  }
+
+  if (pdfTableResult.status === 'fulfilled') {
+    pdfTableRecords.value = pdfTableResult.value?.data ?? []
+  } else {
+    console.error('[PublicationsView] fetchPdfTable failed:', pdfTableResult.reason)
   }
 })
 
@@ -183,12 +195,25 @@ onUnmounted(() => {
       class="scroll-mt-24"
       aria-labelledby="research-guide-heading"
     >
-      <h2
-        id="research-guide-heading"
-        class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl"
-      >
-        {{ t({ zh: '研究指南', en: 'Research Guide' }) }}
-      </h2>
+      <div class="flex items-center gap-4">
+        <div>
+          <span class="font-mono text-sm font-medium tracking-widest text-cyan-600 uppercase">
+            {{ t({ zh: '入门指引', en: 'Getting Started' }) }}
+          </span>
+          <h2
+            id="research-guide-heading"
+            class="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl"
+          >
+            {{ t({ zh: '研究指南', en: 'Research Guide' }) }}
+          </h2>
+        </div>
+        <div class="h-px flex-1 bg-gradient-to-r from-cyan-300/80 to-transparent" aria-hidden="true" />
+        <span
+          class="shrink-0 rounded-full bg-cyan-50 px-3 py-1 text-sm font-medium text-cyan-800 sm:text-base"
+        >
+          {{ researchGuideRows.length }}{{ t({ zh: ' 篇', en: ' guides' }) }}
+        </span>
+      </div>
 
       <div class="mt-6 overflow-x-auto">
         <table class="w-full min-w-[40rem] border-collapse text-left">
@@ -350,9 +375,9 @@ onUnmounted(() => {
                   class="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-cyan-950"
                 >
                   <span class="font-mono text-xl font-bold text-cyan-300/90 sm:text-2xl">
-                    {{ String(pub.year).slice(2) }}
+                    {{ String(resolvePaperYear(pub) || '').slice(-2) }}
                   </span>
-                  <span class="mt-0.5 font-mono text-xs text-slate-400">{{ pub.year }}</span>
+                  <span class="mt-0.5 font-mono text-xs text-slate-400">{{ resolvePaperYear(pub) || '—' }}</span>
                 </div>
                 <span
                   class="absolute right-0 bottom-0 left-0 h-0.5 origin-right scale-x-0 bg-cyan-400 transition-transform group-hover:scale-x-100"
