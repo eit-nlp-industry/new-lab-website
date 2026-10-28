@@ -31,9 +31,6 @@ const title = computed(() => getTranslatedField(article.value, 'title', locale.v
 const summary = computed(() => getTranslatedField(article.value, 'summary', locale.value))
 const author = computed(() => getTranslatedField(article.value, 'author', locale.value))
 const date = computed(() => formatBlogDate(article.value?.published_at))
-const cover = computed(() =>
-  article.value?.cover ? directusPublicAssetUrl(article.value.cover) : '',
-)
 const contentHtml = computed(() =>
   renderBlogContent(getTranslatedField(article.value, 'content', locale.value)),
 )
@@ -136,13 +133,6 @@ onMounted(loadPosts)
           {{ summary }}
         </p>
       </header>
-
-      <!-- <img
-        v-if="cover"
-        :src="cover"
-        :alt="title"
-        class="mt-10 aspect-[2/1] w-full rounded-2xl object-cover shadow-xl shadow-slate-200/60"
-      /> -->
 
       <div
         v-if="contentHtml"
