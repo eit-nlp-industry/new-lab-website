@@ -259,6 +259,51 @@ export function clearPatentsCache() {
   clearCacheByPathPrefix('/items/patent')
 }
 
+export type FetchBlogsOptions = DirectusGetOptions & {
+  limit?: number
+  offset?: number
+  status?: string
+}
+
+export interface BlogRecord {
+  [key: string]: unknown
+  id: number | string
+  status?: string
+  slug?: string
+  title?: string
+  summary?: string
+  content?: string
+  cover?: string | { id?: string; filename_disk?: string } | null
+  author?: string
+  published_at?: string
+  translations?: Array<{
+    [key: string]: unknown
+    languages_code?: string
+    title?: string
+    summary?: string
+    content?: string
+    author?: string
+  }>
+}
+
+/** 获取技术博客（含 translations，前端按语言切换）。不请求 tag。 */
+export async function fetchBlogs(
+  options: FetchBlogsOptions = {},
+): Promise<DirectusListResponse<BlogRecord>> {
+  const params = {
+    fields: 'id,status,slug,title,summary,content,cover,author,published_at,translations.*',
+    'filter[status][_eq]': options.status ?? 'published',
+    sort: '-published_at',
+    limit: options.limit ?? 100,
+    offset: options.offset ?? 0,
+  }
+  return directusGet('/items/blog', params, options)
+}
+
+export function clearBlogsCache() {
+  clearCacheByPathPrefix('/items/blog')
+}
+
 export type FetchPdfTableOptions = DirectusGetOptions & {
   limit?: number
   offset?: number

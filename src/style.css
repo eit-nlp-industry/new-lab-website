@@ -72,4 +72,48 @@ body {
   .markdown-content :where(hr) {
     @apply my-6 border-slate-200;
   }
+
+  .markdown-content :where(img) {
+    @apply my-4 h-auto max-w-full rounded-lg;
+  }
+
+  .markdown-content :where(video) {
+    @apply my-4 aspect-video w-full rounded-lg bg-slate-900;
+  }
+
+  .markdown-content :where(pre) {
+    @apply my-4 overflow-x-auto rounded-lg bg-slate-900 p-4 text-sm text-slate-100;
+  }
+
+  .markdown-content :where(:not(pre) > code) {
+    @apply rounded bg-slate-100 px-1 py-0.5 font-mono text-[0.9em] text-slate-800;
+  }
+
+  .markdown-content :where(pre code) {
+    @apply bg-transparent p-0 text-inherit;
+  }
+
+  .markdown-content :where(table) {
+    @apply my-4 w-full border-collapse overflow-hidden rounded-lg text-left text-sm sm:text-base;
+  }
+
+  .markdown-content :where(th, td) {
+    @apply border border-slate-200 px-3 py-2 align-top;
+  }
+
+  .markdown-content :where(th) {
+    @apply bg-slate-50 font-semibold text-slate-800;
+  }
+
+  .markdown-content :where(figure) {
+    @apply my-4;
+  }
+
+  .markdown-content :where(figcaption) {
+    @apply mt-2 text-center text-sm text-slate-400;
+  }
+
+  .markdown-content :where(iframe) {
+    @apply my-4 aspect-video w-full max-w-full rounded-lg border-0;
+  }
 }

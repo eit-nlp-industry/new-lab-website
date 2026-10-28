@@ -5,6 +5,8 @@ const PublicationsView = () => import('@/views/PublicationsView.vue')
 const TeamView = () => import('@/views/TeamView.vue')
 const NewsView = () => import('@/views/NewsView.vue')
 const NewsDetailView = () => import('@/views/NewsDetailView.vue')
+const BlogView = () => import('@/views/BlogView.vue')
+const BlogDetailView = () => import('@/views/BlogDetailView.vue')
 const ProjectsView = () => import('@/views/ProjectsView.vue')
 const JoinUsView = () => import('@/views/JoinUsView.vue')
 
@@ -14,6 +16,8 @@ const routeLoaders = new Map<string, () => Promise<unknown>>([
   ['/team', TeamView],
   ['/news', NewsView],
   ['/news/:id', NewsDetailView],
+  ['/blog', BlogView],
+  ['/blog/:slug', BlogDetailView],
   ['/projects', ProjectsView],
   ['/join', JoinUsView],
 ])
@@ -57,6 +61,16 @@ const router = createRouter({
       path: '/news/:id',
       name: 'news-detail',
       component: NewsDetailView,
+    },
+    {
+      path: '/blog',
+      name: 'blog',
+      component: BlogView,
+    },
+    {
+      path: '/blog/:slug',
+      name: 'blog-detail',
+      component: BlogDetailView,
     },
     {
       path: '/projects',
